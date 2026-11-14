@@ -1,0 +1,114 @@
+*jumpgraph.txt*  A live map of how you navigate a codebase
+
+==============================================================================
+CONTENTS                                                 *jumpgraph-contents*
+
+  1. Introduction ........................... |jumpgraph-intro|
+  2. Commands ............................... |jumpgraph-commands|
+  3. Configuration .......................... |jumpgraph-config|
+  4. Lua API ................................ |jumpgraph-api|
+  5. The core binary ........................ |jumpgraph-core|
+  6. Troubleshooting ........................ |jumpgraph-troubleshooting|
+
+==============================================================================
+1. INTRODUCTION                                             *jumpgraph-intro*
+
+jumpgraph records where you go while exploring code and shows it as a graph in
+your browser. In "file" mode nodes are files. In "treesitter" mode nodes are
+the functions, methods, classes and impls enclosing the cursor. Edges are the
+jumps between them. Nodes grow with revisits, cursor activity and dwell time.
+
+Nothing runs until |:JumpGraphStart|: no process, no port, no autocmds.
+
+Requires Neovim 0.11+ and `curl` (first download only).
+
+==============================================================================
+2. COMMANDS                                              *jumpgraph-commands*
+
+:JumpGraphStart                                            *:JumpGraphStart*
+    Start tracking. Downloads the core binary first if needed. Prints the
+    URL of the browser view (default http://127.0.0.1:9001/).
+
+:JumpGraphOpen                                              *:JumpGraphOpen*
+    Open the browser view, starting tracking first if needed.
+
+:JumpGraphStop                                              *:JumpGraphStop*
+    Stop tracking and release the port. The graph is kept; the next
+    |:JumpGraphStart| resumes it.
+
+:JumpGraphClear                                            *:JumpGraphClear*
+    Wipe the graph. The browser's Clear button does the same.
+
+:JumpGraphMode {file|treesitter}                            *:JumpGraphMode*
+    Switch what is tracked. Clears the graph. Also available in the
+    browser's Settings panel.
+
+:JumpGraphInstall[!]                                     *:JumpGraphInstall*
+    Download and verify the pinned core binary. With ! reinstall it.
+
+:JumpGraphLog                                                *:JumpGraphLog*
+    Open the core's log file.
+
+==============================================================================
+3. CONFIGURATION                                           *jumpgraph-config*
+
+Call `require("jumpgraph").setup(opts)` only to change defaults:
+>lua
+    require("jumpgraph").setup({
+      addr = "127.0.0.1:9001",   -- or $JUMPGRAPH_ADDR
+      open_browser = false,
+      mode = "file",              -- "file" | "treesitter"
+      activity_base = 1.0,
+      activity_decay = 0.5,
+      activity_throttle_ms = 120,
+      poll_interval_ms = 3000,
+      draw_back_edges = true,
+      ignore_buftypes = { "terminal", "prompt", "quickfix", "nofile" },
+      core = {
+        path = nil,           -- own binary ($JUMPGRAPH_CORE); skips download
+        auto_install = true,
+        url = nil,            -- mirror template, {version} {asset}
+        install_dir = nil,    -- default stdpath("data")/jumpgraph/bin
+      },
+    })
+<
+Run one tracking session per Neovim instance on a distinct `addr`.
+
+==============================================================================
+4. LUA API                                                    *jumpgraph-api*
+
+require("jumpgraph").start()            Same as |:JumpGraphStart|.
+require("jumpgraph").stop()             Same as |:JumpGraphStop|.
+require("jumpgraph").clear()            Same as |:JumpGraphClear|.
+require("jumpgraph").open()             Same as |:JumpGraphOpen|.
+require("jumpgraph").set_mode({mode})   Same as |:JumpGraphMode|.
+require("jumpgraph").status()           Table: tracking, url, core_running,
+                                        core_version, mode, config.
+
+==============================================================================
+5. THE CORE BINARY                                           *jumpgraph-core*
+
+The graph engine and the browser UI live in `jumpgraph-core`, a closed-source
+native binary. It is published per platform on the plugin's GitHub releases
+(tag `core-v<version>`). `lua/jumpgraph/manifest.lua` pins the version and the
+SHA-256 of every build, and the plugin refuses a download whose hash doesn't
+match. Binaries live in stdpath("data")/jumpgraph/bin, one per version.
+
+The core listens on 127.0.0.1 only and accepts websocket connections only
+from its own UI's origin. It exits when Neovim does.
+
+Offline: download the asset yourself, verify it against the release's
+SHA256SUMS, and set `core.path`.
+
+==============================================================================
+6. TROUBLESHOOTING                                *jumpgraph-troubleshooting*
+
+- `:checkhealth jumpgraph` checks the platform, binary, version, protocol and
+  checksum.
+- "cannot listen on …": the port is busy, often because another Neovim is
+  tracking. Set a different `addr` / $JUMPGRAPH_ADDR.
+- Empty treesitter graph: the buffer needs a treesitter parser for its
+  filetype.
+- Core errors are written to |:JumpGraphLog|.
+
+ vim:tw=78:ts=8:ft=help:norl:

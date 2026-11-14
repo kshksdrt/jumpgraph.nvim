@@ -1,0 +1,5 @@
+# Core binaries are never committed: they are fetched from releases and
+# pinned by lua/jumpgraph/manifest.lua.
+jumpgraph-core*
+*.part
+/doc/tags
