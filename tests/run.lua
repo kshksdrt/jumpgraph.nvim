@@ -154,7 +154,10 @@ test("ignores special buffers", function()
   vim.bo[buf].buftype = "nofile"
   eq(tracker.file_of(buf), nil)
   vim.bo[buf].buftype = ""
-  eq(tracker.file_of(buf), "/tmp/jg-test-scratch")
+  -- Neovim may resolve the path (macOS: /tmp -> /private/tmp; Windows: drive/slashes),
+  -- so compare against what it reports rather than the literal we set.
+  eq(tracker.file_of(buf), vim.api.nvim_buf_get_name(buf))
+  assert(tracker.file_of(buf):find("jg-test-scratch", 1, true), "name should end up in the path")
 end)
 
 print("commands")
