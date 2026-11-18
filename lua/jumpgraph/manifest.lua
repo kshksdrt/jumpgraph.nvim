@@ -9,6 +9,10 @@ return {
   protocol = 1,
   url = "https://github.com/kshksdrt/jumpgraph.nvim/releases/download/core-v{version}/{asset}",
   assets = {
-    ["x86_64-unknown-linux-musl"] = "f91052f183dac9e13da44aab7baf39d9f3813f976b6a1f3587c070527c7d1b56",
+    ["aarch64-apple-darwin"] = "7a4cc3caa9ebeef5cef7c0117082769f4e42fdc76078c5d08e2be1b7f03b858c",
+    ["aarch64-unknown-linux-musl"] = "787c0766d2ff48205263a90ee80be23582609439d2e0f526ec357ec0c52a3c09",
+    ["x86_64-apple-darwin"] = "040d2d4a5ebe6758bf9b6796134cc161d97f5cc66f20b14d6129dbffcf7ab529",
+    ["x86_64-pc-windows-msvc"] = "c913e3e792df5a228e2e2ad94b48b0ffe5987c72c7dfeaea68bb09b2187cd0f8",
+    ["x86_64-unknown-linux-musl"] = "6743930d0475463f25779c7e466f94969e5f552fe3fe3e79643081f99edd6dd3",
   },
 }
